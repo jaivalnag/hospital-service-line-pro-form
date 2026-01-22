@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hospital Administration Analysis Tool</title>
+    <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css">
+    <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; padding: 40px; color: #333; }
+        .dashboard { background: white; max-width: 900px; margin: auto; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border-top: 6px solid #005eb8; }
+        h1 { color: #005eb8; margin-bottom: 5px; }
+        .subtitle { color: #666; margin-bottom: 25px; font-style: italic; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 1.1em; }
+        th { background-color: #005eb8; color: white; text-align: left; padding: 12px; }
+        td { padding: 12px; border-bottom: 1px solid #ddd; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        .impact-box { margin-top: 30px; padding: 20px; background-color: #e7f3ff; border-left: 4px solid #005eb8; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+<div class="dashboard">
+    <h1>Service Line Feasibility Model</h1>
+    <p class="subtitle">Proprietary analysis tool for 5-Year Pro Forma projections (v2026.1)</p>
+    
+    <div id="table-output"></div>
+
+    <div class="impact-box">
+        <h3>Executive Sensitivity Analysis</h3>
+        <div id="sensitivity-output"></div>
+    </div>
+</div>
+
+<script type="py">
+from pyscript import display
+
+# --- FINANCIAL LOGIC ---
+annual_vol = 1200
+growth = 0.04
+# 2026 Florida Weighted Average Reimbursement per case
+# (Mix of Medicare, Private, and Self-Pay)
+rev_per_case = (0.45 * 12500) + (0.10 * 8200) + (0.40 * 21000) + (0.05 * 2500)
+var_cost = 6500
+fixed_cost = 1200000
+
+# Building the HTML Table
+html_table = "<table><thead><tr><th>Year</th><th>Volume</th><th>Revenue</th><th>EBITDA</th><th>Margin</th></tr></thead><tbody>"
+
+current_vol = annual_vol
+for year in range(2026, 2031):
+    revenue = current_vol * rev_per_case
+    ebitda = revenue - (current_vol * var_cost) - fixed_cost
+    margin = (ebitda / revenue) * 100
+    
+    html_table += f"<tr><td>{year}</td><td>{int(current_vol)}</td><td>${revenue:,.0f}</td><td>${ebitda:,.0f}</td><td>{margin:.1f}%</td></tr>"
+    current_vol *= (1 + growth)
+
+html_table += "</tbody></table>"
+
+# Sensitivity Analysis Logic
+new_avg = (0.55 * 12500) + (0.10 * 8200) + (0.30 * 21000) + (0.05 * 2500)
+impact = ((new_avg - rev_per_case) / rev_per_case) * 100
+
+display(html_table, target="table-output", append=False)
+display(f"<b>Scenario:</b> A 10% shift from Private Insurance to Medicare results in a <b>{abs(impact):.2f}%</b> decrease in Net Patient Service Revenue per case.", target="sensitivity-output")
+</script>
+
+</body>
+</html>
